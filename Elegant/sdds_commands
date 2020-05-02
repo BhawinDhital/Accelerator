@@ -1,0 +1,70 @@
+#!/bin/bash
+
+path="/nsls2/apps/bin/"
+
+
+fileRoot="SR_8"
+
+
+pi=3.1415926535897932384
+
+
+
+
+# for single particle take last damping time
+
+   sddsprocess $fileRoot.w1 $fileRoot.w03 -filter=parameter,Pass,356674,628913
+   sddsregroup $fileRoot.w03 $fileRoot.ww03
+   sddsplot $fileRoot.w03 -col=t,p -graph=dot,type=1 -device=png -output=tp6.png
+   sddsplot $fileRoot.w03 -col=x,xp -graph=dot,type=2 -device=png -output=xxp6.png
+   sddsplot $fileRoot.w03 -col=y,yp -graph=dot,type=3 -device=png -output=yyp6.png
+
+   sddsprintout $fileRoot.ww03 -col=particleID -col=x -col=xp -col=y -col=yp -col=t -col=p -col=dt $fileRoot.www03
+
+exit
+
+sddsplot $fileRoot.w03 -col=t,p -graph=dot,type=1 -device=png -output=V11.png
+sddsplot $fileRoot.w03 -col=x,xp -graph=dot,type=2 -device=png -output=V22.png
+sddsplot $fileRoot.w03 -col=y,yp -graph=dot,type=3 -device=png -output=V33.png
+
+# for many particles
+
+#   sddsprocess $fileRoot.w1 $fileRoot.w03 -filter=parameter,Pass,1220894,1220894
+#   sddsplot $fileRoot.w03 -col=x,xp -graph=dot
+
+
+
+   sddsprocess $fileRoot.w4 $fileRoot.w8 -filter=parameter,Pass,1220894,1220894
+   sddsplot $fileRoot.w8 -col=t,p -graph=dot,type=1 -device=png -output=tpb1.png
+   sddsplot $fileRoot.w8 -col=x,xp -graph=dot,type=2 -device=png -output=xxpb1.png
+   sddsplot $fileRoot.w8 -col=y,yp -graph=dot,type=2 -device=png -output=yypb1.png
+
+   sddsprintout $fileRoot.w8 -col=particleID -col=x -col=xp -col=y -col=yp -col=t -col=p -col=dt $fileRoot.ww8
+
+exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   rm -f Elegant_Run.ww1
+#   rm -f Elegant_Run.w2
+#   rm -f Elegant_Run.ww2
+#   rm -f Elegant_Run.w03
+#   rm -f Elegant_Run.ww03
+
+exit
