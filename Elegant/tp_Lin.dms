@@ -1,0 +1,232 @@
+#!/bin/bash
+
+path="/nsls2/apps/bin/"
+
+#fileRoot="MEIC_p_Run"
+fileRoot="SR_8"
+#fileRoot="MEIC_e_ChromCorrect"
+#fileRoot="ARCA"
+
+pi=3.1415926535897932384
+
+#    elegant BasicRun_quarter_opt.ele -macro=step=0.01,step1=0.001
+
+#    elegant BasicRun_quarter.ele
+
+    sddsxref $fileRoot.mag $fileRoot.twi $fileRoot.plot -nowarning \
+    -fillIn -reuse=row -match=ElementName -take=ElementType
+    sddsprocess $fileRoot.plot $fileRoot.plotQ \
+   "-match=col,ElementType=*QUAD,ElementType=*DRIF*,|"
+    sddsprocess $fileRoot.plot $fileRoot.plotS \
+    "-match=col,ElementType=*SEXT,ElementType=*DRIF*,|"
+    sddsprocess $fileRoot.plot $fileRoot.plotD \
+    "-match=col,ElementType=*BEN*,ElementType=*DRIF*,|"
+
+
+#    sddsprintout -format=double=%10.6f -width=40 -param=nux -param=nuy \
+#	-param=dnu?/dp -param=dnu?/dp2 -param=dnu?/dJ? -param=b*Max -param=etaxMax \
+#	-param=alpha* -param=etax* -param=ex0,format=%10.6g -param=Sdelta0 -param=J* \
+#	 -param=tau* -param=I* -param=h*\
+#	$fileRoot.twi  -spreadsheet=csv $fileRoot.param.csv
+
+    sddsprintout -format=double=%10.6f -width=40 -param=nux -param=nuy \
+        -param=dnux/dp* -param=dnuy/dp* -param=dnu?/dJ? \
+	-param=b*Max -param=etaxMax \
+	-param=alpha* -param=etax* -param=ex0,format=%10.6g -param=Sdelta0 -param=J* \
+	 -param=tau* -param=I* -param=h* \
+	$fileRoot.twi  -spreadsheet=csv $fileRoot.param.csv
+
+    sddsprintout -format=string=%15s -width=130 -column=ElementName \
+	-format=double=%16.10f  -col=s -col=betax -col=alphax \
+	-col=etaxp -col=etayp -col=betay -col=alphay -col=psiy \
+	$fileRoot.twi  -spreadsheet=csv $fileRoot.twiss.csv
+
+
+    sddsprintout -format=double=%16.10f -column='(ElementName,ElementType,s,betax,betay,alphax,alphay,etax,etay,etaxp,etayp,psix,psiy)'\
+	$fileRoot.twi $fileRoot.twiout
+
+    sddsplot -thickness=2 \
+	-graph=line,vary -unsup=y\
+	-column=s,betax -graph=line,type=0,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+	-column=s,betay -graph=line,type=1,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+	-column=s,Profile $fileRoot.plotQ \
+	-overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=10,fill,thick=2 \
+	-column=s,Profile $fileRoot.plotS \
+	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=9,fill,thick=2 \
+	-column=s,Profile $fileRoot.plotD \
+	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=6,fill,thick=2 \
+
+#        -device=png -output=$fileRoot.png
+
+    sddsplot -thickness=2 \
+	-graph=line,vary -unsup=y\
+	-column=s,etax -graph=line,type=0,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+	-column=s,etay -graph=line,type=1,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+	-column=s,Profile $fileRoot.plotQ \
+	-overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=10,fill,thick=2 \
+	-column=s,Profile $fileRoot.plotS \
+	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=9,fill,thick=2 \
+	-column=s,Profile $fileRoot.plotD \
+	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=6,fill,thick=2 \
+
+#    sddsplot -thickness=2 \
+#	-graph=line,vary -unsup=y \
+#	-column=s,betax -graph=line,type=0,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+#	-column=s,betay -graph=line,type=1,thick=2 -leg -yscales=id=beta $fileRoot.twi \
+#	-column=s,etax -graph=line,type=3,thick=2 -leg -yscales=id=etax  $fileRoot.twi \
+#	-column=s,Profile $fileRoot.plotQ \
+#	-overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=18,fill,thick=2 \
+#	-column=s,Profile $fileRoot.plotS \
+#	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=9,fill,thick=2 \
+#	-column=s,Profile $fileRoot.plotD \
+#	-overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=6,fill,thick=2 \
+
+    rm -f $fileRoot.plotS
+    rm -f $fileRoot.plotQ
+    rm -f $fileRoot.plotD
+    rm $fileRoot.plot
+
+exit
+
+
+#!/bin/sh
+# \
+exec oagtclsh "$0" "$@"
+
+set auto_path [linsert $auto_path 0  /nsls2/apps/oag/apps/lib/$env(HOST_ARCH)]
+set auto_path [linsert $auto_path 0 /nsls2/apps/oag/lib_patch/$env(HOST_ARCH)]
+#APSStandardSetup
+
+#this is a simpler version of plotTwiss
+
+set usag0 "tp is a simpler version of plotTwiss"
+set usage "tp -fileRoot <root> -printfile <1/0> -plotOptions"
+set fileRoot ""
+set printfile 0
+set pi 3.1415926535897932384
+
+set args $argv
+APSParseArguments {fileRoot printfile}
+
+if ![string length $fileRoot] {
+    puts $usage
+    exit
+}
+
+set date [exec date]
+#puts $date
+exec sddsxref $fileRoot.mag $fileRoot.twi $fileRoot.plot -nowarning \
+    -fillIn -reuse=row -match=ElementName -take=ElementType
+exec sddsprocess $fileRoot.plot $fileRoot.plotQ \
+    "-match=col,ElementType=*QUAD,ElementType=*DRIF*,|"
+exec sddsprocess $fileRoot.plot $fileRoot.plotS \
+    "-match=col,ElementType=*SEXT,ElementType=*DRIF*,|"
+exec sddsprocess $fileRoot.plot $fileRoot.plotD \
+    "-match=col,ElementType=*BEN*,ElementType=*DRIF*,|"
+file delete $fileRoot.plot
+
+#exec elegant $fileRoot.ele
+
+if {0} {
+exec sddsprintout -format=double=%10.6f -width=40 -param=nux -param=nuy \
+	-param=dnu?/dp -param=b*Max -param=etaxMax -param=alpha* \
+	-param=etax* -param=ex0,format=%10.6g -param=Sdelta0 -param=J* -param=tau* \
+	-param=I* \
+	$fileRoot.twi  -spreadsheet=csv $fileRoot.param.csv
+
+#set cols [list s betax alphax psix etax etaxp betay alphay psiy]
+
+exec sddsprintout -format=string=%10s -width=130 -column=ElementName \
+	-format=double=%10.6f  -col=s -col=betax -col=alphax \
+	-col=etaxp -col=betay -col=alphay -col=psiy \
+	$fileRoot.twi  -spreadsheet=csv $fileRoot.twiss.csv
+}
+
+set epars [exec sdds2stream $fileRoot.par -col=ElementParameter]
+
+if {[string first ANGLE $epars]>0} {
+	exec sddsprocess $fileRoot.par temp.par \
+	    -match=col,ElementType=*BEN* -match=col,ElementParameter=ANGLE \
+	    -process=ParameterValue,sum,theta
+	set theta [exec sdds2stream temp.par -par=theta]
+	set NP [expr int(2.0*$pi/$theta+0.5)]
+	file delete temp.par
+    } else {
+	set NP 1
+    }
+
+#puts $NP
+
+exec sddsprocess $fileRoot.twi plot.twi -nowarning \
+"-define=par,nuxc, nux $NP *" "-define=par,nuyc,nuy $NP *" \
+"-define=par,cxc, dnux/dp $NP *" "-define=par,cyc,dnuy/dp $NP *" \
+"-define=par,exnm,ex0 1.e9 *" \
+"-print=param,aLabel,nux:%7.3f nuy:%7.3f ex0:%5.2g nm,nuxc,nuyc,exnm" \
+"-print=param,bLabel,Cx:%7.1f Cy:%7.1f ac:%8.2e,cxc,cyc,alphac" \
+"-print=par,label,\$i %30s %30s ,aLabel,bLabel"
+
+set tit "${fileRoot} $date"
+set alab [exec sdds2stream plot.twi -par=aLabel]
+set blab [exec sdds2stream plot.twi -par=bLabel]
+set labels [concat $alab \n $blab]
+set void ""
+
+#puts $args
+
+if [string length $args] {
+         exec sddsplot -thickness=2 \
+	    -graph=line,vary -unsup=y \
+	    -col=s,betax -graph=line,type=0,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,betay -graph=line,type=1,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,etax -graph=line,type=2,thick=2 -leg -yscales=id=etax plot.twi \
+	    -title=$void \
+	    -col=s,Profile $fileRoot.plotQ \
+	     -overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=18,fill,thick=2 \
+	     -col=s,Profile $fileRoot.plotS \
+	     -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=14,fill,thick=2 \
+	     -col=s,Profile $fileRoot.plotD \
+	     -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=7,fill,thick=2 \
+
+
+#            "-topline=@aLabel" "-title=@bLabel" -xLabel=$tit -topTitle="" \
+    } elseif $printfile {
+
+	exec sddsplot -thickness=2 \
+	    -graph=line,vary -unsup=y \
+	    -col=s,betax -graph=line,type=0,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,betay -graph=line,type=1,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,etax -graph=line,type=2,thick=2 -leg -yscales=id=etax plot.twi \
+	    -topline=@aLabel \
+	    -title=@bLabel -xLabel=$tit -topTitle="" \
+	    -col=s,Profile $fileRoot.plotQ \
+	    -overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=18,fill,thick=2 \
+	    -col=s,Profile $fileRoot.plotS \
+	    -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=14,fill,thick=2 \
+	    -col=s,Profile $fileRoot.plotD \
+	    -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=7,fill,thick=2 \
+	     -device=png -output=$fileRoot.png
+
+    } else {
+	exec sddsplot -thickness=2 \
+	    -graph=line,vary -unsup=y \
+	    -col=s,betax -graph=line,type=0,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,betay -graph=line,type=1,thick=2 -leg -yscales=id=beta plot.twi \
+	    -col=s,etax -graph=line,type=2,thick=2 -leg -yscales=id=etax plot.twi \
+	    -topline=@aLabel \
+	    -title=@bLabel -xLabel=$tit -topTitle="" \
+	    -col=s,Profile $fileRoot.plotQ \
+	    -overlay=xmode=normal,yfactor=0.06 -split=page -graph=line,type=18,fill,thick=2 \
+	    -col=s,Profile $fileRoot.plotS \
+	    -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=14,fill,thick=2 \
+	    -col=s,Profile $fileRoot.plotD \
+	    -overlay=xmode=normal,yfactor=0.02 -split=page -graph=line,type=7,fill,thick=2
+    }
+
+exec rm -f $fileRoot.plotS
+exec rm -f $fileRoot.plotQ
+exec rm -f $fileRoot.plotD
+exec rm -f plot.twi
+
+#puts [exec sddsprintout $fileRoot.twi -par]
+
+exit
