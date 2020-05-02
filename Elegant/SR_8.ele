@@ -1,0 +1,141 @@
+
+!Tracking  ==================================================================
+
+&run_setup
+    lattice       = SR_8.lte,
+    use_beamline  = SR_cooler,
+!    p_central     = 293.5410029, !1956.95112,150-1000 MeV
+    p_central     = 293.5410029, !LER 150 MeV
+!    p_central     = 1956.95112,! HER 1000 MeV
+    parameters = "%s.param",
+!    default_order = 2,
+!    concat_order  = 3,
+!     centroid      = "%s.cen",
+!    wrap_around = 0
+!    print_statistics = 1
+    always_change_p0 = 0,
+!    random_number_seed = 0,
+!    rootname = "SR_cooler_v5"
+&end
+
+!&alter_elements name=*, type=CSBEND, item=N_KICKS, value=150, allow_missing_elements=1 &end
+!&alter_elements name=*, type=KSEXT, item=N_KICKS, value=200, allow_missing_elements=1 &end
+!&alter_elements name=*, type=KQUAD, item=N_KICKS, value=150, allow_missing_elements=1 &end
+
+!&alter_elements name=B*, type=CSBEND, item=SYNCH_RAD, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=ISR, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=USE_RAD_DIST, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=ADD_OPENING_ANGLE, value=1 &end
+
+!&alter_elements name=Q*, type=KQUAD, item=SYNCH_RAD, value=1 &end
+!&alter_elements name=Q*, type=KQUAD, item=ISR, value=1 &end
+
+!&alter_elements name=S*, type=*SEXT*, item=SYNCH_RAD, value=1 &end
+!&alter_elements name="*", type=*SEXT*, item=K2, value=0, differential=<wsext>, &end
+
+
+&run_control
+!    n_indices = 1
+!    n_steps = 1
+    n_passes = 1000000
+&end
+
+
+&bunched_beam n_particles_per_bunch = 1, centroid[0] = 0.0,0.0,0.0,0.0,0.0,0.0 &end
+
+&track &end
+&stop &end
+
+&bunched_beam
+  bunch = "%s.bun"
+  n_particles_per_bunch = 10,
+  sigma_dp = 1e-03
+  sigma_s = 2.50e-02
+!  emit_z = 1e-06,
+!  beta_z = 99.0668359, alpha_z = -0.071976102,
+  distribution_type[0] = 3*"uniform-ellipse",
+  distribution_cutoff[0] = 1,1,1,
+&end
+
+&track &end
+&stop &end
+
+
+&vary_element
+  index_number= 0,
+  index_limit= 5,
+  name=ma,
+  item=dp,
+  initial=-1.8E-04,
+  final=1.8E-04,
+!  multiplicative=1
+&end
+
+&matrix_output
+  printout = "%s.mpr"
+  printout_order = 1,
+&end
+
+&track &end
+&stop &end
+
+
+!=====================================================
+!Twiss file
+
+&change_particle
+  name = electron
+&end
+
+&divide_elements name=*, type=CSBEND, divisions=5 &end
+
+!&divide_elements name=*, type=KQUAD, divisions=5 &end
+!&divide_elements name=*, type=KSEXT, divisions=5 &end
+
+&run_setup
+    lattice       = SR_8.lte,
+!    lattice      = "<fn>",
+    use_beamline  = SR_cooler,
+!    p_central     = 293.5410029, !1956.95112,150-1000 MeV
+    p_central     = 293.5410029, !LER 150 MeV
+!    p_central     = 1956.95112,! HER 1000 MeV
+!    default_order = 3,
+!    concat_order  = 2,
+    centroid     = %s.cen,
+!    acceptance   = %s.acc,
+!    final        = %s.fin,
+    output = %s.out ,
+!    always_change_p0 = 1
+    parameters    = %s.param,
+    magnets       = "%s.mag",
+!   rootname=<rootname>
+&end
+
+!there is no need to set synch_rad=1 for twiss parameter output
+
+&run_control
+!        n_steps  = 1,
+        n_passes = 1
+&end
+
+&twiss_output
+   filename             = "%s.twi",
+!   concat_order         = 2,
+   matched              = 1,
+!   output_at_each_step  = 1,
+   radiation_integrals  = 1,
+   higher_order_chromaticity = 1,
+   higher_order_chromaticity_range  = 3e-6,
+   higher_order_chromaticity_points = 7,
+   compute_driving_terms     = 1,
+&end
+
+&bunched_beam n_particles_per_bunch = 1 &end
+
+&matrix_output
+  printout = "%s.mpr"
+  printout_order = 1
+&end
+
+&track &end
+&stop &end
