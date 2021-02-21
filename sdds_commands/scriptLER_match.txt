@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#Script to match the ElementName in .mmap file and .twi file
+# turn off (!) &divide_elements name=*, type=CSBEND, divisions=5 &end in twiss run before matching the elements in mmap file.
+
+sddsxref SR_500MeV.twi SR_500MeV.mmap SR_500MeV.twi1 -match=ElementName
+
+sddsxref SR_500MeV.mmap SR_500MeV.twi SR_500MeV.mmap1 -match=ElementName
+
+# Now SR_500MeV.twi1 and SR_500MeV.mmap1 files has the same ElementName
+
+sddsprocess SR_500MeV.mmap1 SR_500MeV.mmap2 -filter=column,s,0,173.1
+sddsprocess SR_500MeV.mmap1 SR_500MeV.mmap3 -filter=column,s,173.1,343.4
+
+sddsprocess SR_500MeV.twi1 SR_500MeV.twi2 -filter=column,s,0,173.1
+sddsprocess SR_500MeV.twi1 SR_500MeV.twi3 -filter=column,s,173.1,343.4
+
+sddsprocess SR_500MeV.twi3 -redefine=parameter,pCentral,"pCentral 3.3333 *"
+
+
+# Run for the beam size and twiss in LER at 150 MeV
+
+sddsprocess SR_500MeV.twi2 test2.twi -define=parameter,epsx,2.17e-06,units=m -define=column,sigma_x1,"epsx betax *"
+-define=parameter,epsy,0.109e-06,units=m -define=column,sigmay,"epsy betay * sqrt" -define=column,gamma_x,"1 alphax alphax * + betax /"
+
+sddsprintout test2.twi -col=s tp0.txt
+sddsprintout test2.twi -col=betax -col=alphax -col=betay -col=alphay -col=sigma_x1 -col=sigmay -col=gamma_x tp1.txt
+sddsprintout test2.twi -col=etax -col=etaxp tp2.txt
+sddsprintout SR_500MeV.mmap2 -col=deltaPositive -col=deltaNegative ma2.txt
+
+sddsprocess test2.twi -redefine=parameter,Sdelta0,"Sdelta0 11.106 *"
+sddsprocess test2.twi -redefine=parameter,ex0,"ex0 37.040 *"
+
+#=======================================================================================================================
+
+# Run for the beam size and twiss in HER at 500 MeV
+
+sddsprocess SR_500MeV.twi3 test3.twi -define=parameter,epsx,0.652e-06,units=m -define=column,sigma_x1,"epsx betax *"
+-define=parameter,epsy,0.0326e-06,units=m -define=column,sigmay,"epsy betay * sqrt" -define=column,gamma_x,"1 alphax alphax * + betax /"
+
+sddsprocess test3.twi -redefine=parameter,Sdelta0,"Sdelta0 3.333 *"
+sddsprocess test3.twi -redefine=parameter,ex0,"ex0 11.112 *"
+
+sddsprocess test3.twi -redefine=col,pCentral0,"pCentral0 3.33333 *"
+sddsprocess SR_500MeV.mmap3 -redefine=col,pCentral0,"pCentral0 3.33333 *"
+sddsprocess test3.twi -redefine=col,s,"s 171.7 -"
+sddsprocess SR_500MeV.mmap3 -redefine=col,s,"s 171.7 -"
+
+sddsprintout test3.twi -col=s tp0.txt
+sddsprintout test3.twi -col=betax -col=alphax -col=betay -col=alphay -col=sigma_x1 -col=sigmay -col=gamma_x tp3.txt
+sddsprintout test3.twi -col=etax -col=etaxp tp4.txt
+sddsprintout SR_500MeV.mmap3 -col=deltaPositive -col=deltaNegative ma3.txt
+
+
+
+ exit()
