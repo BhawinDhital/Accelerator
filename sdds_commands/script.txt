@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#Script to match the ElementName in .mmap file and .twi file
+
+sddsxref SR_1000MeV.twi SR_1000MeV.mmap SR_1000MeV.twi1 -match=ElementName
+
+sddsxref SR_1000MeV.mmap SR_1000MeV.twi SR_1000MeV.mmap1 -match=ElementName
+
+# Now SR_1000MeV.twi1 and SR_1000MeV.mmap1 files has the same ElementName
+# Split the whole ring 343.4 m into half: low energy ring and high energy ring
+
+sddsprocess SR_1000MeV.mmap1 SR_1000MeV.mmap2 -filter=column,s,0,173.1
+sddsprocess SR_1000MeV.mmap1 SR_1000MeV.mmap3 -filter=column,s,173.1,343.4
+
+sddsprocess SR_1000MeV.twi1 SR_1000MeV.twi2 -filter=column,s,0,173.1
+sddsprocess SR_1000MeV.twi1 SR_1000MeV.twi3 -filter=column,s,173.1,343.4
+
+# To get the beam sizes in LER at 150 MeV
+sddsprocess SR_1000MeV.twi2 test2.twi -define=parameter,epsx,17.30e-06,units=m
+-define=column,sigma_x1,"epsx betax *"
+-define=parameter,epsy,0.87e-06,units=m -define=column,sigmay,"epsy betay * sqrt"
+-define=column,gamma_x,"1 alphax alphax * + betax /"
+
+sddsprintout test2.twi -col=s tp0.txt
+sddsprintout test2.twi -col=betax -col=alphax -col=betay -col=alphay -col=sigma_x1 -col=sigmay -col=gamma_x tp1.txt
+sddsprintout test2.twi -col=etax -col=etaxp tp2.txt
+sddsprintout SR_1000MeV.mmap2 -col=deltaPositive -col=deltaNegative ma2.txt
+
+sddsprocess test2.twi -redefine=parameter,Sdelta0,"Sdelta0 48.65 *"
+sddsprocess test2.twi -redefine=parameter,ex0,"ex0 295.24 *"
+
+#============================================================================================
+# To get the beam sizes in HER at 1000 MeV
+
+sddsprocess SR_1000MeV.twi3 test3.twi -redefine=parameter,pCentral,"pCentral 6.6666 *"
+-define=parameter,epsx,2.60e-06,units=m -define=column,sigma_x1,"epsx betax *"
+-define=parameter,epsy,0.13e-06,units=m -define=column,sigmay,"epsy betay * sqrt"
+-define=column,gamma_x,"1 alphax alphax * + betax /"
+
+sddsprintout test3.twi -col=betax -col=alphax -col=betay -col=alphay -col=sigma_x1 -col=sigmay -col=gamma_x tp3.txt
+sddsprintout test3.twi -col=etax -col=etaxp tp4.txt
+sddsprintout test3.twi -col=s tp0.txt
+sddsprintout SR_1000MeV.mmap3 -col=deltaPositive -col=deltaNegative ma3.txt
+
+sddsprocess test3.twi -redefine=parameter,Sdelta0,"Sdelta0 7.289 *"
+sddsprocess test3.twi -redefine=parameter,ex0,"ex0 44.286 *"
+
+sddsprocess test3.twi -redefine=col,pCentral0,"pCentral0 6.6666 *"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,pCentral0,"pCentral0 6.6666 *"
+
+# To redefine 's', it is necessary to redefine the length of the circumference
+sddsprocess test3.twi -redefine=col,s,"s 171.7 -"
+
+# This is to redefine a column in sdds file
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaNegative,"293.54 293.54 deltaNegative * +"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaNegative," deltaNegative 6.6666 *"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaNegative,"deltaNegative 1956.92 -"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaNegative,"deltaNegative 1956.92 /"
+
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaPositive,"293.54 293.54 deltaPositive * +"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaPositive," deltaPositive 6.6666 *"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaPositive,"deltaPositive 1956.92 -"
+sddsprocess SR_1000MeV.mmap3 -redefine=col,deltaPositive,"deltaPositive 1956.92 /"
+
+ exit()
