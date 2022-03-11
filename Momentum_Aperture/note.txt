@@ -1,0 +1,17 @@
+1. This lattice file has sextupoles in both arcs (arcs in LER and HER)
+2. Momentum aperture calculation is performed for each ring separately.
+3. LER mmap file and the corresponding twiss output file is used to calculate the Touschek lifetime.
+4. To make a plot, use plotMomAperture.txt, the following concat_order
+=========================================================
+#!/bin/sh
+# \
+exec tclsh "$0" "$@"
+
+exec sddsplot -graph=line,vary -unsup=y \
+       -column=s,deltaPositive SR_1000MeV.mmap -legend \
+       -column=s,deltaNegative SR_1000MeV.mmap -legend \
+       -column=s,Profile -overlay=xmode=norm,yfact=0.08 \
+       -graph=line,type=2 SR_1000MeV.mag &
+=============================================================
+! To save a png image, used
+-device=png -output=momentumaperture.png
