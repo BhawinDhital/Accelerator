@@ -1,0 +1,9 @@
+#!/bin/sh
+# \
+exec tclsh "$0" "$@"
+
+exec sddsplot -graph=line,vary -unsup=y \
+       -column=s,deltaPositive SR_1000MeV.mmap -legend \
+       -column=s,deltaNegative SR_1000MeV.mmap -legend \
+       -column=s,Profile -overlay=xmode=norm,yfact=0.08 \
+       -graph=line,type=2 SR_1000MeV.mag &
