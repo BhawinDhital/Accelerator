@@ -1,0 +1,67 @@
+#!/usr/local/bin python2.7
+from string import *
+#import commands
+import sys
+import os.path
+from numpy import matrix
+from numpy import linalg
+from numpy import matlib
+from copy import deepcopy
+from math import pi
+from math import trunc
+from math import sqrt
+from math import cos
+from math import acos
+from math import sin
+from math import atan
+import numpy as np
+
+# This to calculate one-turn map with matrix-multiplication
+#This value is for old latice with MSLIP for 500 MeV
+#h_L = 0.728290946
+#h_H = 0.731995209
+E_L = 150000000 #MeV
+E_H = 500000000 # MeV
+Vac = 350 # MeV
+Vdc = 350
+Vb = 80000
+#Vb = 0.080
+#This value is the latest lattice with M56 = -1.40 /whole
+h_L = 1.42675
+h_H = 1.43346
+a = h_L/E_L
+b = h_H/E_H
+#print(a,b)
+#M_ler = A = np.array([[ 1.0, -a],[0.0, 1.0]])
+#Mcav_acc = B = np.array([[1.0,0.0],[-Vac,1.0]])
+#M_her = C = np.array([[ 1.0, -b],[ 0.0, 1.0]])
+#Mcav_dec = D = np.array([[1.0,0.0],[Vdc,1.0]])
+#Mcav_bun = E = np.array([[1.0,0.0],[0.0,1.0]])
+#M = np.dot(B, A)
+#N = np.dot(C, M)
+#O = np.dot(D, N)
+#X = np.dot(E,O)
+
+M_ler = A = np.array([[ 1.0, -a],[0.0, 1.0]])
+Mcav_acc = B = np.array([[1.0,0.0],[0.0,1.0]])
+M_her = C = np.array([[ 1.0, -b],[ 0.0, 1.0]])
+Mcav_dec = D = np.array([[1.0,0.0],[0.0,1.0]])
+Mcav_bun = E = np.array([[1.0,0.0],[Vb,1.0]])
+M = np.dot(B, A)
+N = np.dot(C, M)
+O = np.dot(D, N)
+X = np.dot(E,O)
+
+print("One loop-transfer map:\n",(X))
+print("Determinant:",(np.linalg.det(X)))
+Y =np.trace(X)
+print("Diagonal_sum(Trace):",Y)
+y = Y/2
+print("Trace divide by 2:",y)
+mu = acos(y)
+Qs = mu/(2*pi)
+print("tune:\n",(Qs))
+
+
+
+#exit;
