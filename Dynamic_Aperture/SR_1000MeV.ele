@@ -1,0 +1,84 @@
+
+!Dynamic Aperture (DA) calculation in a storage ring
+! use the following command in elegant run, code statrs after !Tracking ======
+!Tracking  ==================================================================
+&run_setup
+    lattice       = SR_1000MeV.lte,
+    use_beamline  = SR_cooler,
+!    p_central     = 293.54100292171, !LER 150 MeV
+    p_central     = 1956.951119542,! HER 1000 MeV
+    parameters = "%s.param",
+    acceptance = %s.acc
+!    default_order = 2,
+!    concat_order  = 3,
+     centroid      = "%s.cen",
+!    always_change_p0 = 0,
+!    random_number_seed = 0
+&end
+
+&twiss_output
+      filename = "%s.twi",
+      concat_order = 1,
+      matched = 1,
+      radiation_integrals = 1
+!    	beta_x = 100
+!    	beta_y = 100
+      output_at_each_step = 0
+&end
+
+&alter_elements name=*, type=CSBEND, item=N_KICKS, value=150, allow_missing_elements=1 &end
+&alter_elements name=*, type=KSEXT, item=N_KICKS, value=200, allow_missing_elements=1 &end
+&alter_elements name=*, type=KQUAD, item=N_KICKS, value=150, allow_missing_elements=1 &end
+
+
+!alter_elements name=B*, type=CSBEND, item=SYNCH_RAD, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=ISR, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=USE_RAD_DIST, value=1 &end
+!&alter_elements name=B*, type=CSBEND, item=ADD_OPENING_ANGLE, value=1 &end
+
+!&alter_elements name=Q*, type=KQUAD, item=SYNCH_RAD, value=1 &end
+!&alter_elements name=Q*, type=KQUAD, item=ISR, value=1 &end
+
+!&alter_elements name=S*, type=*SEXT*, item=SYNCH_RAD, value=1 &end
+!&alter_elements name=S*, type=*SEXT*, item=ISR, value=1 &end
+
+
+&run_control
+    n_indices = 1
+!    n_steps = 1
+   n_passes=1000
+&end
+
+! 11 elements below and above the reference particle
+&vary_element
+   index_number = 0,
+   index_limit = 11,
+   name = mal,
+   item = dp,
+   initial = -5,
+   final = 5,
+   multiplicative = 1
+&end
+
+! you can change the set up, go to elegant user manual
+&find_aperture
+   output = "%s.aper",
+   mode = "n-line",
+   n_lines = 21,
+   xmin = -0.1,
+   xmax = 0.1,
+   ymin=0,
+   ymax = 0.1,
+   nx = 21,
+   ny = 19,
+   n_splits = 8,
+   split_fraction = 0.1,
+   verbosity = 1,
+   desired_resolution = 0.000001,
+   offset_by_orbit = 1
+&end
+
+&bunched_beam n_particles_per_bunch = 1 &end
+
+&track &end
+&stop &end
