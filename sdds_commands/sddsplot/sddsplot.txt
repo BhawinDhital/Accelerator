@@ -1,0 +1,13 @@
+1. After Elegant run/ any sdds data set has column values
+2. You can plot those columns in the data from sdds data sets.
+# Plot 2d (x,y) dot plot
+sddsplot "filename" -col=x,y -graph=dot
+# Plot line
+sddsplot "filename" -col=x,y -graph=line
+# Plot different line type (color)
+sddsplot "filename" -col=x,y -graph=line,type=2
+you can change the type=2,3,4.. that gives the different colors line plot
+# to save the plot
+sddsplot "filename" -col=x,y -graph=line,type=2 -device=output -output=twiss.png
+# to save in large png image
+sddsplot "filename" -col=x,y -graph=line,type=2 -device=output -output=twiss.lpng
