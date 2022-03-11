@@ -1,0 +1,21 @@
+#sddsplot command to calculate the dp/p and dz
+
+sddsplot ler.w1 -col=t,p -graph=dot -offset=xparameter=PassCentralTime,xinvert,yparameter=pCentral,yinvert -factor=xMultiplier=-3e8,yparameter=pCentral,yinvert -xLabel='$gD$rz (m)' -ylabel='$gD$rp/p'
+
+
+#sddsplot command to plot p(beta*gamma) and dz
+
+ sddsplot ler.w1 -col=t,p -graph=dot -offset=xparameter=PassCentralTime,xinvert -factor=xMultiplier=-3e8 -xLabel='$gD$rz (m)'
+
+
+# Type the first line to observe your momentum spread and the bunch spread in your beam.
+
+
+sddsplot ler.w1 -col=t,p -graph=dot -offset=xparameter=PassCentralTime,xinvert,yparameter=pCentral,yinvert -factor=xMultiplier=-3e8,yparameter=pCentral,yinvert -xLabel='$gD$rz (m)' -ylabel='$gD$rp/p'
+
+# This commands to split pages
+
+ sddsplot combined.sdds -col=t,p -graph=dot -offset=xparameter=PassCentralTime,xinvert -split=pages -separate=pages
+
+
+#-device=png -output=w1.png # this command generates the png file.
