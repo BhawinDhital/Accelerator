@@ -1,0 +1,3 @@
+#This folder has JSPEC simulation output file, cool2.txt after running JSPEC simulation.
+#cool2.txt file has some sdds header which to be removed before plotting.
+# see the attached notebook and pdf files.
