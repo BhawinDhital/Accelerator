@@ -1,0 +1,10 @@
+1. gnu plot files are attached in this folder.
+2. Twiss plot in the storage ring examples are attached.
+3. Twiss parameters and dispersion functions in a dual energy storage ring are attached.
+4. The corresponding file "betafunction.gnu" plots beta functions along the beam line.
+5. The corresponding file "dispersion.gnu" plots dispersion functions along the beam line.
+
+
+#To run gnuplot, keep all files and twiss.txt file in the same folder.
+#Then type the command "gnuplot dispersion.gnu", just type without " "(gnuplot dispersion.gnu)
+This save your plot image in different format.
