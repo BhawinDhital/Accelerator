@@ -1,0 +1,24 @@
+This is Dynamic Aperture calculation file.
+1. Please use SR_1000MeV.ele and SR_1000MeV.lte to run DA.
+2. Finally make a plot using the command.
+3. The details on DA plot is in "da.txt" file attached. The code is the following
+
+#This commands are used to make a plot of dynamic aperture.
+# After running elegant for dynamic aperture finding, use the output file elegant.aper to make a plot
+
+# Dynamic Aperture plot (x,y)
+sddsplot SR_1000MeV.aper -col=x,y
+
+# Dynamic Aperture plot interms of sigma_dp
+sddsplot SR_1000MeV.aper -col=x,y -graph=line,vary -split=page -legend=par=MAL.DP
+
+# To save as .png format add the following command at the end, i.e.
+sddsplot SR_1000MeV.aper -col=x,y -graph=line,vary -split=page -legend=par=MAL.DP -device=png -output=sept15dawhole.png
+
+# Dynamic Aperture in terms of beam sizes in x and y directions.
+i. Calculate the transverse beam sizes first, i.e., sigma_(x,y)
+ii.Then calculate the inverse of those values, i.e., x_value = 1/sigma_x, y_value = 1/sigma_y
+Then to plot dynamic aperture in terms of beam sizes sigma_x and sigma_y, use the following command:
+sddsplot SR_1000MeV.aper -col=x,y -graph=line,vary -split=page -legend=par=MALP.DP
+-factor=xMultiplier=147.9849,yMultiplier=661.8086
+-xLabel='$gs$r$bx$n' -yLabel='$gs$r$by$n'
